@@ -8,9 +8,18 @@ from pathlib import Path
 FIELDS = ("reference", "target", "scope", "observations", "unknowns", "sources")
 
 
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
 def verify(path, reference, target):
     raw = Path(path).read_bytes()
-    data = json.loads(raw.decode("utf-8"))
+    data = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_object)
     if not isinstance(data, dict) or set(data) != set(FIELDS):
         raise ValueError("artifact must contain exactly: " + ", ".join(FIELDS))
     for key in ("reference", "target", "scope"):
