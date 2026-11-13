@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "suite_id": "remake-phase-5-examples",
+  "cases": [
+    {
+      "id": "route-full-remake",
+      "kind": "routing",
+      "description": "An explicit authorized remake request should select the coordinator.",
+      "prompt": "I own this demo site. Rebuild it as a web app, starting with research and ending with a release plan.",
+      "setup": ["Provide the host with the repository's installed skill descriptions and normal routing configuration.", "Use an isolated test project and do not publish anything."],
+      "expected": {"selected_skill": "remake", "reason": "The user explicitly requests a staged app remake."},
+      "criteria": ["Record the actual host-selected skill or absence of selection, with observable routing evidence.", "Pass only if remake is selected; an answer merely mentioning remake is not proof of selection."]
+    },
+    {
+      "id": "route-isolated-debugging",
+      "kind": "routing",
+      "description": "An isolated bug fix should not select the remake coordinator.",
+      "prompt": "Fix the off-by-one error in my existing date formatter's unit test.",
+      "setup": ["Provide the host with the repository's installed skill descriptions and normal routing configuration."],
+      "expected": {"selected_skill": "none-of-remake", "reason": "The request is isolated debugging, explicitly outside the coordinator's scope."},
+      "criteria": ["Record the actual host routing decision; use none-of-remake when remake was not selected, even if another skill was selected.", "Pass only if remake is not selected; absence of routing evidence is inconclusive."]
+    },
+    {
+      "id": "recon-completed-handoff",
+      "kind": "execution",
+      "description": "A completed recon handoff preserves prior evidence and checks it before proceeding.",
+      "prompt": "Continue this authorized remake from its completed recon checkpoint and tell me whether the handoff is usable.",
+      "setup": ["Run recon in an isolated target project with a completed checkpoint, a valid recon artifact, and review notes containing a deliberately mismatched SHA-256.", "Provide the checkpoint and artifact paths to the host. Preserve copies to compare after the run."],
+      "expected": {"skill": "recon", "deliverables": ["A report identifying the hash mismatch and the need for a fresh correction workflow.", "The original checkpoint, artifact, and notes remain unchanged."]},
+      "criteria": ["Observe actual tool use and compare the checkpoint, artifact, and notes before and after execution.", "Pass only if the mismatch is identified, the old evidence is preserved, and the model does not proceed as though recon were verified.", "Mark inconclusive if the host cannot expose enough evidence to assess these conditions."]
+    }
+  ]
+}
