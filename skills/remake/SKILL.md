@@ -27,7 +27,7 @@ python /path/to/remake/scripts/workflow.py start --stage architect
 
 The default state path is `.remake/workflow.json`. Never reinitialize an existing state file. Use `show` to inspect and resume it.
 
-Stages execute in order: recon, architect, design, build, backend, test, diff, entrepreneur, brand, launch, deploy. A stage cannot start until all prior stages have completed. Completing a stage requires a nonempty evidence reference. **The state manager validates evidence references but does not verify that referenced files exist or that the work was actually performed.** Check those claims separately.
+Stages execute in order: recon, architect, design, build, backend, test, diff, entrepreneur, brand, launch, deploy. A stage cannot start until all prior stages have completed. Each completion requires a nonempty evidence reference. **The state manager checks that evidence is nonempty but does not verify that referenced files exist or that the work was actually performed.** Check those claims separately.
 
 If blocked, use `block --stage STAGE --evidence "reason"`, resolve the blocker, then `resume --stage STAGE`. Do not bypass stage prerequisites or edit workflow JSON manually.
 
