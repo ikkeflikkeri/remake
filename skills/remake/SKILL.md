@@ -5,7 +5,7 @@ description: Coordinate a staged application remake from authorized reference ma
 
 # Remake — workflow coordinator
 
-Use this skill to plan and track an authorized app remake. The stage-specific skills are still under development; do not imply their implementation is complete.
+Use this skill to plan and track an authorized app remake. The recon skill is available; other stage-specific skills are still under development.
 
 ## Intake
 
@@ -21,13 +21,16 @@ The repository provides a dependency-free state manager at `scripts/workflow.py`
 python /path/to/remake/scripts/workflow.py init --reference "https://example.com" --target "web"
 python /path/to/remake/scripts/workflow.py show
 python /path/to/remake/scripts/workflow.py start --stage recon
-python /path/to/remake/scripts/workflow.py complete --stage recon --evidence ".remake/recon.md"
+python /path/to/remake/scripts/verify_recon.py .remake/recon.json
+python /path/to/remake/scripts/workflow.py complete --stage recon --evidence ".remake/recon.json"
 python /path/to/remake/scripts/workflow.py start --stage architect
 ```
 
 The default state path is `.remake/workflow.json`. Never reinitialize an existing state file. Use `show` to inspect and resume it.
 
 Stages execute in order: recon, architect, design, build, backend, test, diff, entrepreneur, brand, launch, deploy. A stage cannot start until all prior stages have completed. Each completion requires a nonempty evidence reference. **The state manager checks that evidence is nonempty but does not verify that referenced files exist or that the work was actually performed.** Check those claims separately.
+
+For recon, follow the `recon` skill to create, verify, and review the artifact before completing the stage. The verifier is not enforced by the checkpoint manager.
 
 If blocked, use `block --stage STAGE --evidence "reason"`, resolve the blocker, then `resume --stage STAGE`. Do not bypass stage prerequisites or edit workflow JSON manually.
 

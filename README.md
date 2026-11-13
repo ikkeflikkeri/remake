@@ -4,7 +4,7 @@ An artifact-driven Claude Code skill pack for researching, rebuilding, verifying
 
 ## Status
 
-Phase 2: the workflow coordinator and checkpoint state manager are implemented. Specialized execution skills are **not implemented yet**.
+Phase 3 has begun: the workflow coordinator and a recon skill with artifact verification are implemented. Other specialized execution skills are **not implemented yet**.
 
 ## Principles
 
@@ -27,13 +27,14 @@ Run the manager from the **target application** directory:
 ```bash
 python /path/to/remake/scripts/workflow.py init --reference "https://example.com" --target "web"
 python /path/to/remake/scripts/workflow.py start --stage recon
-python /path/to/remake/scripts/workflow.py complete --stage recon --evidence ".remake/recon.md"
+python /path/to/remake/scripts/verify_recon.py .remake/recon.json
+python /path/to/remake/scripts/workflow.py complete --stage recon --evidence ".remake/recon.json"
 python /path/to/remake/scripts/workflow.py show
 ```
 
 State is stored at `.remake/workflow.json`. Use `block` and `resume` to recover a blocked stage. Initialization refuses to overwrite existing state.
 
-**Limitations:** Evidence references are not independently verified, concurrent writers are not supported, and stage-specific skills are not implemented yet. A completed checkpoint does not mean an artifact has passed validation.
+The recon skill describes the required artifact and review process. Its verifier checks structure and workflow identity and prints a content hash; it does not verify factual accuracy. Verification is a separate step and is not enforced by the workflow CLI. Other stages still accept unverified evidence references. Concurrent writers are not supported.
 
 ## Roadmap
 
