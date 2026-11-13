@@ -68,6 +68,10 @@ def transition(data, stage, status, evidence=None):
                "blocked": {"in_progress"}, "completed": set()}
     if status not in allowed[current]:
         raise WorkflowError(f"invalid transition: {current} -> {status}")
+    if status in ("completed", "blocked") and (not isinstance(evidence, str) or not evidence.strip()):
+        raise WorkflowError("completion evidence is required" if status == "completed" else "blocker reason is required")
+    if status == "in_progress" and evidence is not None:
+        raise WorkflowError("evidence is only accepted when completing or blocking")
     if status == "in_progress" and any(
         item["status"] == "in_progress" for name, item in data["stages"].items() if name != stage
     ):
@@ -86,15 +90,14 @@ def transition(data, stage, status, evidence=None):
 def read(path):
     try:
         return validate(json.loads(Path(path).read_text(encoding="utf-8")))
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, json.JSONDecodeError, RecursionError) as exc:
         raise WorkflowError(str(exc)) from exc
 
 
-def save(path, data):
+def save(path, data, *, create=False):
     validate(data)
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    # Never overwrite existing workflow state during initialization.
     fd, temporary = tempfile.mkstemp(prefix=".workflow-", suffix=".tmp", dir=path.parent)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as stream:
@@ -102,7 +105,13 @@ def save(path, data):
             stream.write("\n")
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        if create:
+            try:
+                os.link(temporary, path)
+            except FileExistsError as exc:
+                raise WorkflowError("workflow already exists; refusing to overwrite") from exc
+        else:
+            os.replace(temporary, path)
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
@@ -120,8 +129,6 @@ def main():
     try:
         path = Path(args.file)
         if args.command == "init":
-            if path.exists():
-                raise WorkflowError("workflow already exists; refusing to overwrite")
             data = initial(args.reference, args.target)
         else:
             data = read(path)
@@ -132,9 +139,9 @@ def main():
                             "block": "blocked", "resume": "in_progress"}
                 data = transition(data, args.stage, statuses[args.command], args.evidence)
         if args.command != "show":
-            save(path, data)
+            save(path, data, create=args.command == "init")
         print(json.dumps(data, indent=2))
-    except WorkflowError as exc:
+    except (WorkflowError, OSError) as exc:
         parser.exit(2, f"error: {exc}\n")
 
 

@@ -46,6 +46,31 @@ class WorkflowTests(unittest.TestCase):
         blocked = transition(started, "recon", "blocked", "missing permission")
         resumed = transition(blocked, "recon", "in_progress")
         self.assertEqual(resumed["stages"]["recon"]["status"], "in_progress")
+        with self.assertRaises(WorkflowError):
+            transition(resumed, "recon", "completed")
+        self.assertEqual(transition(resumed, "recon", "completed", "result.md")["stages"]["recon"]["status"], "completed")
+
+    def test_block_requires_reason_and_start_rejects_evidence(self):
+        with self.assertRaises(WorkflowError):
+            transition(self.state, "recon", "in_progress", "premature")
+        started = transition(self.state, "recon", "in_progress")
+        with self.assertRaises(WorkflowError):
+            transition(started, "recon", "blocked")
+
+    def test_create_does_not_replace_existing_state(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "state.json"
+            save(path, self.state, create=True)
+            with self.assertRaises(WorkflowError):
+                save(path, initial("other", "web"), create=True)
+            self.assertEqual(read(path), self.state)
+
+    def test_invalid_encoding_is_reported(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "state.json"
+            path.write_bytes(b"\xff")
+            with self.assertRaises(WorkflowError):
+                read(path)
 
     def test_no_simultaneous_active_stages(self):
         started = transition(self.state, "recon", "in_progress")
