@@ -44,4 +44,4 @@ If blocked, use `block --stage STAGE --evidence "reason"`, resolve the blocker, 
 
 ## Further guidance
 
-See `references/workflow.md` for the state contract and limitations.
+See [workflow state contract](references/workflow.md) for the state contract and limitations, and [stage map](references/stage-map.md) for stage inputs, outputs, dependencies, and evidence guidance.
