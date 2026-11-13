@@ -5,7 +5,7 @@ description: Coordinate a staged application remake from authorized reference ma
 
 # Remake — workflow coordinator
 
-Use this skill to plan and track an authorized app remake. The recon skill is available; other stage-specific skills are still under development.
+Use this skill to plan and track an authorized app remake. The recon and architect skills are available; other stage-specific skills are still under development.
 
 ## Intake
 
@@ -22,8 +22,9 @@ python /path/to/remake/scripts/workflow.py init --reference "https://example.com
 python /path/to/remake/scripts/workflow.py show
 # Hand off to the recon skill to run recon through completion.
 python /path/to/remake/scripts/workflow.py show
-# Only after recon is complete, start the next stage:
-python /path/to/remake/scripts/workflow.py start --stage architect
+# Once recon passes its handoff checks, hand off to the architect skill.
+# It owns starting or resuming architect through review and completion.
+python /path/to/remake/scripts/workflow.py show
 ```
 
 The default state path is `.remake/workflow.json`. Never reinitialize an existing state file. Use `show` to inspect and resume it.
@@ -31,6 +32,8 @@ The default state path is `.remake/workflow.json`. Never reinitialize an existin
 Stages execute in order: recon, architect, design, build, backend, test, diff, entrepreneur, brand, launch, deploy. A stage cannot start until all prior stages have completed. Each completion requires a nonempty evidence reference. **The state manager checks that evidence is nonempty but does not verify that referenced files exist or that the work was actually performed.** Check those claims separately.
 
 Hand off recon to the `recon` skill, which owns starting or resuming the stage, creating and verifying the artifact, manually reviewing it against sources, recording the SHA-256 and review in the durable sidecar at the artifact path plus `.review.md`, and completing the stage with the artifact path as evidence. Do not start or complete recon again after the handoff. Check the checkpoint before advancing; if recon is blocked or otherwise incomplete, do not start architect. For completed recon, follow the recon skill's handoff check: rerun verification against that checkpoint, compare the hash with the notes, and inspect the evidence. If verification fails, the hash differs, or evidence or notes are missing or unusable, preserve the old checkpoint and use the correction workflow before advancing. Carry its `--file` checkpoint path through every later workflow command and use it as `--workflow` for verification. All later stages in the fresh checkpoint are pending; reassess and record them in order. If the artifact changes before completion, repeat verification and review and record the new hash. The verifier is not enforced by the checkpoint manager.
+
+Hand off architect to the `architect` skill after recon passes its handoff checks. It independently repeats those checks and requires a fresh source-backed recon review, then owns the architect stage, architecture artifact, verification, review, and completion. Do not start or complete architect again after handoff. Check its status before advancing; do not advance if blocked or incomplete. For completed architect, follow the architect skill's handoff: inspect its artifact and durable review sidecar, rerun its verifier against the selected checkpoint, and compare the full hash. Do not advance if verification, the hash, or the evidence and review are unusable; preserve them and follow its correction guidance. The architecture verifier checks structure and identity, completed recon status, the exact evidence path, recon validity, and its digest; neither verifier proves review, truth, or completeness. The workflow manager does not enforce either verifier or the reviews.
 
 If blocked, use `block --stage STAGE --evidence "reason"`, resolve the blocker, then `resume --stage STAGE`. Do not bypass stage prerequisites or edit workflow JSON manually.
 
