@@ -21,7 +21,9 @@ The repository provides a dependency-free state manager at `scripts/workflow.py`
 python /path/to/remake/scripts/workflow.py init --reference "https://example.com" --target "web"
 python /path/to/remake/scripts/workflow.py show
 python /path/to/remake/scripts/workflow.py start --stage recon
+# Follow the recon skill to inspect sources and create .remake/recon.json.
 python /path/to/remake/scripts/verify_recon.py .remake/recon.json
+# Manually review the artifact against its sources and record the SHA-256 with review notes.
 python /path/to/remake/scripts/workflow.py complete --stage recon --evidence ".remake/recon.json"
 python /path/to/remake/scripts/workflow.py start --stage architect
 ```
@@ -30,7 +32,7 @@ The default state path is `.remake/workflow.json`. Never reinitialize an existin
 
 Stages execute in order: recon, architect, design, build, backend, test, diff, entrepreneur, brand, launch, deploy. A stage cannot start until all prior stages have completed. Each completion requires a nonempty evidence reference. **The state manager checks that evidence is nonempty but does not verify that referenced files exist or that the work was actually performed.** Check those claims separately.
 
-For recon, follow the `recon` skill to create, verify, and review the artifact before completing the stage. The verifier is not enforced by the checkpoint manager.
+For recon, follow the `recon` skill to create, verify, and manually review the artifact against its sources, recording the verifier's SHA-256 with review notes before completing the stage. Start recon only once; if the coordinator already started it, the recon skill continues the in-progress stage. If the artifact changes, repeat verification and review and record the new hash. The verifier is not enforced by the checkpoint manager.
 
 If blocked, use `block --stage STAGE --evidence "reason"`, resolve the blocker, then `resume --stage STAGE`. Do not bypass stage prerequisites or edit workflow JSON manually.
 
