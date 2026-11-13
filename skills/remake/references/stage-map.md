@@ -1,0 +1,31 @@
+# Roadmap stage map (workflow v1)
+
+This is planning guidance for the 11 checkpoint stages, not a declaration that their specialized skills or artifact schemas exist. The coordinator and recon skill are available; the other stage-specific skills remain under development. Inputs and outputs below are suggested work products, except for the recon artifact contract. Verify each work product and its underlying work before recording completion. Use authorized references and do not copy proprietary code, protected assets, or private APIs.
+
+## Ordering and evidence
+
+The checkpoint order is `recon → architect → design → build → backend → test → diff → entrepreneur → brand → launch → deploy`. Every stage depends on **all** earlier stages being completed, even where the table names the most relevant inputs. Only one stage can be in progress. The workflow manager requires a nonempty evidence string for completion, but does not check file existence, artifact content, approval, or whether work was performed. Record a specific, reviewed artifact reference; a checkpoint alone is not proof of quality.
+
+If work is blocked, record the reason with `block --stage STAGE --evidence "reason"`, resolve it, and use `resume --stage STAGE`. Blocker reasons and completion references share the evidence list. There is no skipped or not-applicable status in v1. Where a stage genuinely does not apply, start it in order and complete it with a reviewed, specific evidence record explaining the scope, rationale, and basis for the decision; do not invent work or bypass prerequisites. If applicability cannot be established, block until resolved. Completed stages are immutable; retain the old checkpoint and start a new workflow if correction is needed. Do not edit checkpoint JSON manually or store secrets in evidence.
+
+| Stage | Inputs and dependencies | Intended output / completion evidence | Blocked or potentially not applicable |
+| --- | --- | --- | --- |
+| `recon` | Authorized reference, target, scope and acceptance criteria. | `.remake/recon.json` following the [recon skill](../../recon/SKILL.md), including observations, sources and unknowns; verifier SHA-256 and source review notes. Run the verifier and review before completion; the CLI does not enforce either. Reverify after artifact changes. | Block on missing authorization or access; record limitations and unknowns without fabricating findings. |
+| `architect` | Recon findings, unknowns, target and acceptance criteria. | Architecture decisions, boundaries, dependencies and unresolved risks, grounded in recon. | Block on decisions or access necessary for a viable architecture. |
+| `design` | Recon and architecture, target journeys and acceptance criteria. | Design specifications or prototypes for the agreed scope, with source and asset rights considered. | Block on missing requirements or authorized assets; document a reasoned NA decision if no design work applies. |
+| `build` | Architecture and design decisions, target project and scope. | Implementation and a record identifying the changes and checks performed. | Block on missing requirements, dependencies or access. |
+| `backend` | Architecture, implementation and integration requirements. | Backend or integration changes and evidence of the checks performed. | Block on unavailable services, credentials or decisions; record rationale if no backend work applies. |
+| `test` | Implemented scope, acceptance criteria and test environment. | Test results identifying coverage, failures and limitations. | Block when required checks cannot run or failures prevent acceptance; do not report unrun tests as passing. |
+| `diff` | Authorized reference, implemented target, acceptance criteria and test results. | Parity comparison with observed differences, evidence, limitations and disposition. | Block when necessary reference or target access is unavailable; do not infer parity from a checkpoint. |
+| `entrepreneur` | Scope, target, parity findings and relevant business requirements. | Documented business or product decisions and their supporting rationale. | Block on required decisions; record rationale if this work is outside the agreed scope. |
+| `brand` | Approved product direction, design and rights-cleared materials. | Independently branded materials or documented branding decisions and review. | Block on required decisions or rights; record rationale if branding work is outside scope. |
+| `launch` | Test and parity results, product and brand decisions, release requirements. | Launch readiness and release plan, including outstanding issues and required approvals. | Block on unresolved release criteria or decisions; record rationale if launch planning is outside scope. Publication or other external side effects still require explicit approval. |
+| `deploy` | Launch readiness, target environment, release plan and explicit user approval for deployment. | Deployment record and verification, or a reviewed NA rationale when no deployment is in scope. | Block before deployment if approval, access or readiness is missing. An NA record does not authorize deployment later. |
+
+## Roadmap and coordination
+
+Roadmap phase 3 covers artifact schemas, verified evidence, and recon/architecture skills; only recon's specialized skill and verifier are currently available. The recon verifier checks structure and workflow identity, not factual accuracy or completeness. Phase 4 covers build, test, parity and release **workflows**; it is future roadmap scope, not an implemented set of skills or an exemption from the v1 stage order. Phase 5 covers routing and execution evaluations.
+
+Development of independent skills or documentation may proceed in parallel in isolated branches or worktrees, with integration coordinated separately. This does not permit parallel checkpoint stages or concurrent writers to one workflow state: use a single writer for transitions. Atomic replacement prevents partial files, not lost updates. Deployment, publication, payments and other external side effects require explicit user approval; planning or completing an earlier stage is not that approval.
+
+See [workflow state contract](workflow.md) for the v1 transitions and limitations and [coordinator](../SKILL.md) for operating guidance.
