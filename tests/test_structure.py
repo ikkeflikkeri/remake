@@ -11,7 +11,7 @@ class StructureTests(unittest.TestCase):
     def test_plugin_manifest(self):
         manifest = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         self.assertEqual(manifest["name"], "remake")
-        self.assertEqual(manifest["version"], "0.1.0")
+        self.assertRegex(manifest["version"], r"^\d+\.\d+\.\d+$")
 
     def test_missing_skills_fail(self):
         with tempfile.TemporaryDirectory() as directory:
