@@ -7,7 +7,7 @@ description: Inspect authorized application references and produce a structured,
 
 Inspect only references the user is authorized to access, within the agreed scope. Record the target and acceptance criteria; avoid copying protected source or assets. Do not perform external side effects without authorization.
 
-Start the recon stage using the workflow CLI. Gather observable features and user journeys, recording source locations and distinguishing observation from inference. Include limitations, inaccessible areas, and unanswered questions. Do not claim to have inspected or tested anything you did not.
+Inspect the checkpoint with `python /path/to/remake/scripts/workflow.py show`. Start recon with `python /path/to/remake/scripts/workflow.py start --stage recon` only if it is pending; if it is already in progress, continue without starting it again. If blocked, resolve the blocker and resume it as described below. If completed, stop recon work and inspect the recorded evidence and its review notes as described below; do not start or complete the stage again, create or overwrite its artifact, or change the completed checkpoint. Evidence may include blocker reasons as well as artifact references. If correction is needed, retain the old checkpoint, artifact, and review notes and use separate paths as described below. Gather observable features and user journeys, recording source locations and distinguishing observation from inference. Include limitations, inaccessible areas, and unanswered questions. Do not claim to have inspected or tested anything you did not.
 
 Write a UTF-8 JSON artifact such as `.remake/recon.json` with exactly these fields:
 
@@ -17,6 +17,25 @@ Write a UTF-8 JSON artifact such as `.remake/recon.json` with exactly these fiel
 - `unknowns`: nonempty array of strings; explicitly state when none are known.
 - `sources`: nonempty array of strings identifying authorized sources inspected.
 
-Run `python /path/to/remake/scripts/verify_recon.py .remake/recon.json` from the target project, then review the content against the sources. The verifier checks structure and identity, not truth, source access, or completeness. Record its SHA-256 output with your review notes. Complete recon with `python /path/to/remake/scripts/workflow.py complete --stage recon --evidence .remake/recon.json` only after both checks pass. The workflow CLI itself does not enforce verification; artifact changes after verification require repeating it.
+Run `python /path/to/remake/scripts/verify_recon.py .remake/recon.json` from the target project, then review the content against the sources. The verifier checks structure and identity, not truth, source access, or completeness. Save durable UTF-8 review notes at the artifact path with `.review.md` appended (for example, `.remake/recon.json.review.md`). Include the artifact path, the verifier's full SHA-256, sources checked, review findings and limitations, and the review date. Keep these notes with the artifact. Complete recon with `python /path/to/remake/scripts/workflow.py complete --stage recon --evidence .remake/recon.json` only after both checks pass. The workflow CLI itself does not enforce verification; artifact changes after verification require repeating verification and the source review, and recording the new hash with the updated review notes.
 
-If access is blocked, record the reason with the workflow's block command and resume after it is resolved. Do not fabricate findings to satisfy the schema.
+The completion evidence is the artifact path, so a later reader can find the notes by appending `.review.md` to that path. On a completed recon handoff or revisit, inspect the artifact and notes without changing them; blocker reasons may also appear in the evidence list. Rerun `python /path/to/remake/scripts/verify_recon.py ARTIFACT --workflow CHECKPOINT` using the recorded artifact path and the checkpoint being handed off, then compare its full SHA-256 with the hash in the notes. Continue on that checkpoint only if verification passes, the hashes match, and the evidence and review are usable. A matching hash establishes content consistency, not factual accuracy; assess the review and sources as needed. The CLI does not check that either file exists or that the notes are accurate.
+
+If the hash differs, verification fails, or an older completed checkpoint has missing notes, a missing or unusable artifact, or an unusable evidence reference, do not overwrite or invent evidence or proceed as though recon were verified. Preserve the old checkpoint and any existing evidence. Use the correction workflow below to create a fresh checkpoint, artifact, and review notes, including a new source review and hash.
+
+## Correcting completed recon
+
+Completed checkpoints cannot be reopened. Retain the old checkpoint and its evidence for reference. A fresh checkpoint starts every stage pending: after completing recon, reassess each later stage and its evidence, then start and complete stages in order in the new checkpoint. Do not assume the old checkpoint's later completions transfer automatically; reuse existing work only after assessing that it remains applicable and recording appropriate evidence in the new checkpoint. From the target project, choose unused paths for a fresh checkpoint, artifact, and notes. For example, using `.remake/correction-1/` (choose another unused directory for each correction):
+
+```bash
+python /path/to/remake/scripts/workflow.py init --file .remake/correction-1/workflow.json --reference "https://example.com" --target "web"
+python /path/to/remake/scripts/workflow.py show --file .remake/correction-1/workflow.json
+python /path/to/remake/scripts/workflow.py start --file .remake/correction-1/workflow.json --stage recon
+# Inspect sources and write .remake/correction-1/recon.json with matching reference and target.
+python /path/to/remake/scripts/verify_recon.py .remake/correction-1/recon.json --workflow .remake/correction-1/workflow.json
+# Review against sources and save the hash and review in .remake/correction-1/recon.json.review.md.
+python /path/to/remake/scripts/workflow.py complete --file .remake/correction-1/workflow.json --stage recon --evidence .remake/correction-1/recon.json
+python /path/to/remake/scripts/workflow.py show --file .remake/correction-1/workflow.json
+```
+
+Use the intended reference and target, and carry the new checkpoint path through the handoff and all later workflow commands (including `show`, `block`, `resume`, and the next stage). Use the same path as `--workflow` for every verification. If blocked, use `block --file .remake/correction-1/workflow.json --stage recon --evidence "reason"`, resolve it, and use `resume --file .remake/correction-1/workflow.json --stage recon`. Continue to use the new artifact and notes paths; never overwrite completed evidence. For a default-path workflow, omit `--file` and `--workflow` and use the default paths above. Do not fabricate findings to satisfy the schema.
