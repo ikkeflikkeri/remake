@@ -26,17 +26,14 @@ Run the manager from the **target application** directory:
 
 ```bash
 python /path/to/remake/scripts/workflow.py init --reference "https://example.com" --target "web"
-python /path/to/remake/scripts/workflow.py start --stage recon
-# Follow skills/recon/SKILL.md to inspect sources and create .remake/recon.json.
-python /path/to/remake/scripts/verify_recon.py .remake/recon.json
-# Manually review the artifact against its sources and record the SHA-256 with review notes.
-python /path/to/remake/scripts/workflow.py complete --stage recon --evidence ".remake/recon.json"
+# Follow skills/recon/SKILL.md: it starts or resumes recon, creates and verifies
+# the artifact, reviews sources, records the hash, and completes the stage.
 python /path/to/remake/scripts/workflow.py show
 ```
 
 State is stored at `.remake/workflow.json`. Use `block` and `resume` to recover a blocked stage. Initialization refuses to overwrite existing state.
 
-Start recon only once; if it is already in progress, continue with the recon skill without starting it again. The recon skill describes the required artifact and review process. If the artifact changes after verification, rerun verification and review and record the new hash before completion. Its verifier checks structure and workflow identity and prints a content hash; it does not verify factual accuracy. Verification is a separate step and is not enforced by the workflow CLI. Other stages still accept unverified evidence references. Concurrent writers are not supported.
+Hand recon over to the recon skill; it owns the stage through completion, so do not complete it again afterward. If recon is already completed, inspect its recorded evidence without overwriting the artifact. The recon skill describes the required artifact and review process. If the artifact changes after verification, rerun verification and review and record the new hash before completion. Its verifier checks structure and workflow identity and prints a content hash; it does not verify factual accuracy. Verification is a separate step and is not enforced by the workflow CLI. Other stages still accept unverified evidence references. Concurrent writers are not supported.
 
 ## Roadmap
 
