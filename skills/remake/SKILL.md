@@ -3,24 +3,42 @@ name: remake
 description: Coordinate a staged application remake from authorized reference material. Use when a user explicitly asks to recreate or rebuild an app or website with a research-to-release workflow; do not use for isolated debugging or ordinary feature requests.
 ---
 
-# Remake (foundation)
+# Remake — workflow coordinator
 
-This is the initial scaffold, **not an operational end-to-end orchestrator**.
+Use this skill to plan and track an authorized app remake. The stage-specific skills are still under development; do not imply their implementation is complete.
 
-## Safety and scope
+## Intake
 
-- Use only sources the user is authorized to access.
-- Do not copy proprietary source code, trademarks, or copyrighted assets.
-- Ask for explicit approval before publishing, deployment, payments, or other external side effects.
-- Do not claim that tests, visual comparisons, or deployments passed unless actually run.
+1. Confirm the user is authorized to use the reference material.
+2. Record the reference, target platform, and measurable acceptance criteria.
+3. Explain what is implemented and what remains manual.
 
-## Current behavior
+## Checkpoint workflow
 
-1. Clarify the reference and authorized scope.
-2. Identify the target stack and requested fidelity.
-3. Produce a proposed plan with measurable acceptance criteria.
-4. Explain that execution stages are not implemented in this release.
+The repository provides a dependency-free state manager at `scripts/workflow.py`. Run from the target project with a path to the script.
 
-## Next implementation
+```bash
+python /path/to/remake/scripts/workflow.py init --reference "https://example.com" --target "web"
+python /path/to/remake/scripts/workflow.py show
+python /path/to/remake/scripts/workflow.py start --stage recon
+python /path/to/remake/scripts/workflow.py complete --stage recon --evidence ".remake/recon.md"
+python /path/to/remake/scripts/workflow.py start --stage architect
+```
 
-Introduce a validated workflow state contract and checkpointed stage execution.
+The default state path is `.remake/workflow.json`. Never reinitialize an existing state file. Use `show` to inspect and resume it.
+
+Stages execute in order: recon, architect, design, build, backend, test, diff, entrepreneur, brand, launch, deploy. A stage cannot start until all prior stages have completed. Completing a stage requires a nonempty evidence reference. **The state manager validates evidence references but does not verify that referenced files exist or that the work was actually performed.** Check those claims separately.
+
+If blocked, use `block --stage STAGE --evidence "reason"`, resolve the blocker, then `resume --stage STAGE`. Do not bypass stage prerequisites or edit workflow JSON manually.
+
+## Safety
+
+- Only use material the user has permission to access.
+- Do not copy proprietary code, protected assets, or private APIs.
+- Publishing, deployment, payments, and other external side effects require explicit user approval.
+- A completed checkpoint is not proof of quality; run actual tests and document results.
+- Do not claim that unimplemented specialized skills ran.
+
+## Further guidance
+
+See `references/workflow.md` for the state contract and limitations.
