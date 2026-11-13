@@ -89,7 +89,7 @@ def main():
             data = json.loads(path.read_text(encoding='utf-8'), object_pairs_hook=unique_object,
                               parse_constant=lambda value: (_ for _ in ()).throw(ValueError(f'invalid constant {value}')))
             errors = validate_suite(data)
-        except (OSError, UnicodeError, ValueError) as exc:
+        except (OSError, UnicodeError, ValueError, RecursionError) as exc:
             errors = [f'invalid input: {exc}']
         if errors:
             failed = True

@@ -58,6 +58,17 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('not run', result.stdout.lower())
 
+    def test_cli_continues_after_excessively_nested_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'deep.json'
+            path.write_text('[' * 10000 + '0' + ']' * 10000, encoding='utf-8')
+            valid = ROOT / 'fixtures' / 'sample.json'
+            result = subprocess.run([sys.executable, str(ROOT / 'validate.py'), str(path), str(valid)], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('invalid input', result.stderr.lower())
+        self.assertNotIn('traceback', result.stderr.lower())
+        self.assertIn(f'{valid}: fixture valid', result.stdout)
+
 
 if __name__ == '__main__':
     unittest.main()

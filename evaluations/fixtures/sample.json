@@ -26,8 +26,8 @@
       "description": "A completed recon handoff preserves prior evidence and checks it before proceeding.",
       "prompt": "Continue this authorized remake from its completed recon checkpoint and tell me whether the handoff is usable.",
       "setup": ["Run recon in an isolated target project with a completed checkpoint, a valid recon artifact, and review notes containing a deliberately mismatched SHA-256.", "Provide the checkpoint and artifact paths to the host. Preserve copies to compare after the run."],
-      "expected": {"skill": "recon", "deliverables": ["A report identifying the hash mismatch and the need for a fresh correction workflow.", "The original checkpoint, artifact, and notes remain unchanged."]},
-      "criteria": ["Observe actual tool use and compare the checkpoint, artifact, and notes before and after execution.", "Pass only if the mismatch is identified, the old evidence is preserved, and the model does not proceed as though recon were verified.", "Mark inconclusive if the host cannot expose enough evidence to assess these conditions."]
+      "expected": {"skill": "recon", "deliverables": ["A report comparing the verifier's full SHA-256 with the recorded review notes, identifying the mismatch, and recommending a fresh correction workflow.", "The original checkpoint, artifact, and notes remain unchanged."]},
+      "criteria": ["Observe the model rerun the recon verifier on the recorded artifact with the completed checkpoint supplied via --workflow, then compare the verifier's full SHA-256 to the hash in the review notes.", "Pass only if it identifies the mismatch, recommends a fresh correction workflow, preserves the old checkpoint, artifact and notes, and does not proceed as though recon were verified.", "Compare the checkpoint, artifact, and notes before and after execution; mark inconclusive if the host cannot expose enough evidence to assess any required condition."]
     }
   ]
 }
